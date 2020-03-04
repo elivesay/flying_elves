@@ -120,13 +120,40 @@ def draw_sword():
     glVertex3f(-0.2, -.5, .2);  # J
 
     glTexCoord2f(0.0, 0);
-    glVertex3f(0.2, -.5, -.2);  # H
-    glTexCoord2f(1.0, 0);
     glVertex3f(0.2, -.5, .2);  # G
+    glTexCoord2f(1.0, 0);
+    glVertex3f(0.2, -.5, -.2);  # H
     glTexCoord2f(1.0, 1);
-    glVertex3f(0, .5, .2);  # K
-    glTexCoord2f(0, 1);
     glVertex3f(.2, .5, -.2);  # L
+    glTexCoord2f(0, 1);
+    glVertex3f(.20, .5, .2);  # K
+
+    glTexCoord2f(0.0, 0);
+    glVertex3f(.20, .5, .2);  # K
+    glTexCoord2f(1.0, 0);
+    glVertex3f(.2, .5, -.2);  # L
+    glTexCoord2f(1.0, 1);
+    glVertex3f(-.2, .5, -.2);  # M
+    glTexCoord2f(0, 1);
+    glVertex3f(-.2, .5, .2);  # N
+
+    glTexCoord2f(0.0, 0);
+    glVertex3f(-.2, .5, -.2);  # M
+    glTexCoord2f(1, 0);
+    glVertex3f(-.2, .5, .2);  # N
+    glTexCoord2f(1.0, 1);
+    glVertex3f(-0.2, -.5, .2);  # J
+    glTexCoord2f(0, 1);
+    glVertex3f(-0.2, -.5, -.2);  # I
+
+    glTexCoord2f(0, 0);
+    glVertex3f(-0.2, -.5, .2);  # J
+    glTexCoord2f(1.0, 0);
+    glVertex3f(0.2, -.5, -.2);  # H
+    glTexCoord2f(1.0, 1.0);
+    glVertex3f(.2, .5, -.2);  # L
+    glTexCoord2f(0, 1);
+    glVertex3f(-.2, .5, -.2);  # M
 
     glEnd()
 def draw_cube():
