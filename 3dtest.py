@@ -420,6 +420,7 @@ def main():
     playerx = 0
     playery = 0
     playerz = 0
+    flying = False
     player_rot_x = 0
     player_rot_y = 0
     player_rot_z = 0
@@ -463,6 +464,7 @@ def main():
     b = 0
     while True:
         b = b + 1
+        glLoadIdentity()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -475,22 +477,39 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     quit()
+                if event.key == pygame.K_TAB:
+                    flying = False if flying else True
                 if event.key == pygame.K_a:
                     tx = 1
+                    glTranslate(tx, 0, 0)
                 elif event.key == pygame.K_d:
                     tx = -1
+                    glTranslate(tx, 0, 0)
+                elif event.key == pygame.K_e:
+                    ty = 1
+                    glTranslate(0, ty, 0)
+                elif event.key == pygame.K_q:
+                    ty = -1
+                    glTranslate(0, ty, 0)
+
                 elif event.key == pygame.K_w:
                     tz = 1
+                    glTranslate(0, 0, tz)
                 elif event.key == pygame.K_s:
                     tz = -1
+                    glTranslate(0, 0, tz)
                 elif event.key == pygame.K_RIGHT:
                     ry = 1.0
+                    glRotatef(ry * 2, 0, 1, 0)
                 elif event.key == pygame.K_LEFT:
                     ry = -1.0
+                    glRotatef(ry * 2, 0, 1, 0)
                 elif event.key == pygame.K_UP:
                     rz = 1.0
+                    glRotatef(ry * 2, 0, 0, 1)
                 elif event.key == pygame.K_DOWN:
                     rz = -1.0
+                    glRotatef(ry * 2, 0, 0, 1)
                 elif event.type == pygame.K_SPACE:
                     tx = 0
                     ty = 0
@@ -522,7 +541,7 @@ def main():
             #         #glTranslatef(0, 0, speed)
 
         #c
-        glLoadIdentity()
+        #glLoadIdentity()
         if playerx > .05:
             print("out of bounds x")
             #glTranslate(tx + .5, ty, tz)
@@ -533,13 +552,15 @@ def main():
                 # glTranslate(tx
             effect = pygame.mixer.Sound('bullet.wav')
             effect.play()
-
-        glTranslatef(tx, ty, tz)
         playerx = playerx + tx
         playery = playery + ty
         playerz = playerz + tz
-        glRotatef(ry, 0, 1, 0)
-        glRotatef(rz, 0, 0, 1)
+
+        if flying:
+            glTranslatef(tx, ty, tz)
+            glRotatef(ry*2, 0, 1, 0)
+            glRotatef(rz*2, 0, 0, 1)
+
         glMultMatrixf(view_mat)
 
 
