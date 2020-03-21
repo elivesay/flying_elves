@@ -81,6 +81,8 @@ def setup_texture(imageID):
 
 def draw_sword():
     main_viewport = glViewport(0, 0, 1200, 1000);
+    glPushMatrix()
+    #do_movement()
     glMatrixMode(GL_MODELVIEW);
     sword_texture_id = load_texture("chrome.jpeg")
     setup_texture(sword_texture_id)
@@ -159,6 +161,9 @@ def draw_sword():
     glVertex3f(-.2, .5, -.2);  # M
 
     glEnd()
+
+
+    glPopMatrix()
 
 
 
@@ -276,6 +281,83 @@ def draw_tunnel():
     #ssglRotate(0, 0, 0, 0)
 
 
+def do_movement():
+
+
+    glViewport(0, 0, 1200, 1000);
+
+    glMatrixMode(GL_MODELVIEW);
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 4:  # wheel rolled up
+            glScaled(1.05, 1.05, 1.05)
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 5:  # wheel rolled down
+            glScaled(0.95, 0.95, 0.95)
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                quit()
+            if event.key == pygame.K_TAB:
+                flying = False if flying else True
+            if event.key == pygame.K_a:
+                tx = 1
+                glTranslate(tx, 0, 0)
+            elif event.key == pygame.K_d:
+                tx = -1
+                glTranslate(tx, 0, 0)
+            elif event.key == pygame.K_e:
+                ty = 1
+                glTranslate(0, ty, 0)
+            elif event.key == pygame.K_q:
+                ty = -1
+                glTranslate(0, ty, 0)
+
+            elif event.key == pygame.K_w:
+                tz = 1
+                glTranslate(0, 0, tz)
+            elif event.key == pygame.K_s:
+                tz = -1
+                glTranslate(0, 0, tz)
+            elif event.key == pygame.K_RIGHT:
+                ry = 1.0
+                glRotatef(ry * 2, 0, 1, 0)
+            elif event.key == pygame.K_LEFT:
+                ry = -1.0
+                glRotatef(ry * 2, 0, 1, 0)
+            elif event.key == pygame.K_UP:
+                rz = 1.0
+                glRotatef(ry * 2, 0, 0, 1)
+            elif event.key == pygame.K_DOWN:
+                rz = -1.0
+                glRotatef(ry * 2, 0, 0, 1)
+            elif event.type == pygame.K_SPACE:
+                tx = 0
+                ty = 0
+                tz = 0
+                ry = 0
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_a and tx > 0:
+                    tx = 0
+                elif event.key == pygame.K_d and tx < 0:
+                    tx = 0
+                elif event.key == pygame.K_w and tz > 0:
+                    tz = 0
+                elif event.key == pygame.K_s and tz < 0:
+                    tz = 0
+                elif event.key == pygame.K_RIGHT and ry > 0:
+                    ry = 0.0
+                elif event.key == pygame.K_LEFT and ry < 0:
+                    ry = 0.0
+                elif event.key == pygame.K_UP and ry > 0:
+                    rz = 0.0
+                elif event.key == pygame.K_DOWN and ry < 0:
+                    rz = 0.0
+                elif event.key == pygame.H_DOWN:
+                    hud_enabled = False if hud_enabled else True;
+
+
 def load_texture(image_name):
     im = open(image_name)
     #try:
@@ -303,8 +385,10 @@ def draw_hud(x,y, translation_axis=None, translation_value=None, enabled=True):
     print("in draw hud")
     # Draw Health bar:
     glDisable(GL_TEXTURE_2D)
+    #gluLookAt(0, 1000, -1, 0, 1000, -1, 0, 1000, -1)
     #glDisable(GL_DEPTH_TEST)
     if enabled:
+       glPushMatrix()
        status_viewport= glViewport(0, 1000, 1200, 200);
        glTranslate(3, 0, -2)
        #glBegin(GL_QUADS);
@@ -316,8 +400,9 @@ def draw_hud(x,y, translation_axis=None, translation_value=None, enabled=True):
        glVertex3f(1, 1, -10);
        glVertex3f(-1, 1, -10);
        glEnd();
-       glMatrixMode(GL_MODELVIEW);
+       #glMatrixMode(GL_MODELVIEW);
 
+       glPopMatrix()
        #glScissor(0, 1200, 1000, 200);
        #glEnable(GL_SCISSOR_TEST);
        #glClear(GL_COLOR_BUFFER_BIT);
@@ -347,6 +432,7 @@ def draw_hud(x,y, translation_axis=None, translation_value=None, enabled=True):
 
     #else:
     #   glDisable(GL_SCISSOR_TEST )
+
 
 def make_ground():
     GLUquadric = gluNewQuadric()
@@ -479,17 +565,7 @@ def main():
     player_rot_x = 0
     player_rot_y = 0
     player_rot_z = 0
-    # glMatrixMode(GL_PROJECTION)
-    # gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
-    #
-    # glTranslatef(0.0,-10, -40)
-    #
-    # glMatrixMode(GL_MODELVIEW)
-    # glLoadIdentity()
-    # glTranslatef(0, 0, -5)
-    # glGetFloatv(GL_MODELVIEW_MATRIX, view_mat)
-    # glLoadIdentity()
-    # speed=0
+
     ORI = 0
     tx = 0
     ty = 0
@@ -497,117 +573,35 @@ def main():
     ry = 0
     rz = 0
     hud_enabled= True
-    #teddy = ObjLoader("creature.OBJ")
 
     glMatrixMode(GL_PROJECTION)
     gluPerspective(45, (display[0] / display[1]), .1, 300.0)
-    # gluPerspective(45.0f,(GLfloat)width/(GLfloat)height,0.1f,100.0f);
+
     view_mat = IdentityMat44()
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    #glTranslatef(0, 0, -20)
+
     glGetFloatv(GL_MODELVIEW_MATRIX, view_mat)
     glLoadIdentity()
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable( GL_BLEND );
-    #
-    # make_ground()
+
     # make_tree(5, .2, ORI)
 
-    # glTranslatef(0.0, -10, -40)
-    # make_tree(7, .6)
     b = 0
     while True:
         b = b + 1
         glLoadIdentity()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 4:  # wheel rolled up
-                glScaled(1.05, 1.05, 1.05)
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 5:  # wheel rolled down
-                glScaled(0.95, 0.95, 0.95)
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    quit()
-                if event.key == pygame.K_TAB:
-                    flying = False if flying else True
-                if event.key == pygame.K_a:
-                    tx = 1
-                    glTranslate(tx, 0, 0)
-                elif event.key == pygame.K_d:
-                    tx = -1
-                    glTranslate(tx, 0, 0)
-                elif event.key == pygame.K_e:
-                    ty = 1
-                    glTranslate(0, ty, 0)
-                elif event.key == pygame.K_q:
-                    ty = -1
-                    glTranslate(0, ty, 0)
-
-                elif event.key == pygame.K_w:
-                    tz = 1
-                    glTranslate(0, 0, tz)
-                elif event.key == pygame.K_s:
-                    tz = -1
-                    glTranslate(0, 0, tz)
-                elif event.key == pygame.K_RIGHT:
-                    ry = 1.0
-                    glRotatef(ry * 2, 0, 1, 0)
-                elif event.key == pygame.K_LEFT:
-                    ry = -1.0
-                    glRotatef(ry * 2, 0, 1, 0)
-                elif event.key == pygame.K_UP:
-                    rz = 1.0
-                    glRotatef(ry * 2, 0, 0, 1)
-                elif event.key == pygame.K_DOWN:
-                    rz = -1.0
-                    glRotatef(ry * 2, 0, 0, 1)
-                elif event.type == pygame.K_SPACE:
-                    tx = 0
-                    ty = 0
-                    tz = 0
-                    ry = 0
-                elif event.type == pygame.KEYUP:
-                    if event.key == pygame.K_a and tx > 0:
-                        tx = 0
-                    elif event.key == pygame.K_d and tx < 0:
-                        tx = 0
-                    elif event.key == pygame.K_w and tz > 0:
-                        tz = 0
-                    elif event.key == pygame.K_s and tz < 0:
-                        tz = 0
-                    elif event.key == pygame.K_RIGHT and ry > 0:
-                        ry = 0.0
-                    elif event.key == pygame.K_LEFT and ry < 0:
-                        ry = 0.0
-                    elif event.key == pygame.K_UP and ry > 0:
-                        rz = 0.0
-                    elif event.key == pygame.K_DOWN and ry < 0:
-                        rz = 0.0
-                    elif event.key == pygame.H_DOWN:
-                        hud_enabled = False if hud_enabled else True;
-            # if event.type == pygame.KEYDOWN:
-            #     if event.key == pygame.K_UP:
-            #         speed += 2
-            #         #glTranslatef(0, 0, speed)
-            #     if event.key == pygame.K_DOWN:
-            #         speed -= 2
-            #         #glTranslatef(0, 0, speed)
-
-        #c
-        #glLoadIdentity()
+        do_movement()
         if playerx > .05:
             print("out of bounds x")
-            #glTranslate(tx + .5, ty, tz)
+
         if playery > .05:
             print("out of bounds y")
         if playerz > 1:
             print("out of bounds z")
-                # glTranslate(tx
+
             effect = pygame.mixer.Sound('bullet.wav')
             effect.play()
         playerx = playerx + tx
@@ -620,110 +614,40 @@ def main():
             glRotatef(rz*2, 0, 0, 1)
 
         glMultMatrixf(view_mat)
-
-
         glGetFloatv(GL_MODELVIEW_MATRIX, view_mat)
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
-        #glRotatef(90, 0, 0, 1)
-        # glRotatef(1, 3, 1, 1)
-        # glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-
-        # make_tree(5, .2)
-        # if b==1 else None
-
-        # glTranslatef(0,0,speed)
-        # make_tree(5, .2)
-        # glColor3f(0.97, 0.97, 1.0)
-        # for a in range(1,2):
-        #     glPushMatrix()
-        #     new_cube_verts = multiply_vertices(verticies, a)
-        #     cuber(new_cube_verts)
-        #     glPopMatrix()
-        #make_tunnel()
+        glPushMatrix()
+        do_movement()
         draw_sword()
+        glPopMatrix()
+        glPushMatrix()
         draw_hud(playerx, playery, hud_enabled)
-        #glTranslate(2, 22, 14)
+        glPopMatrix()
 
         glPushMatrix()
-        #draw_text()
-        #print(str(glGetFloatv(GL_MODELVIEW_MATRIX, view_mat)))
-        #make_tunnel()
+
         from pygame import mixer
 
-        # pygame.init()
 
-        # make_ground()
-        # glTranslatef(10, ty, tz)
-        #3 glPopMatrix()
-        # for tree_loop in range(0, 50):
-        #     #glPushMatrix()
-        #     make_tree(tree_height_rands[tree_loop], .8, ORI)
-        #     glTranslatef(tx, 6, tz)
-        # for tree_loop in range(0, 4):
-        #     # glPushMatrix()
-        #     make_tree(tree_height_rands[tree_loop], .7, ORI)
-        #     glTranslatef(tx, 6, tz)
 
-        # glPopMatrix()
-        #glTranslate(0, 0, 0)
-        # make_tree(2, .6, ORI)
-        #
-        # glTranslatef(tx, 4, tz)
-        # make_tree(2, .3, ORI)
-        # glTranslatef(tx, 4, tz)
-        # make_tree(2, .6, ORI)
-        # glTranslatef(50, ty, tz)
-        # make_tree(3, .3,ORI)
-        # glTranslatef(3, ty, tz)
-        # make_tree(2, .6, ORI)
-        #
-        #
-        # glTranslatef(tx, 4, tz)
-        # make_tree(2, .3, ORI)
-        # glTranslatef(3, ty, tz)
-        # make_tree(3, .6, ORI)
-        # glTranslatef(10, ty, tz)
-        # make_tree(1, .3,ORI)
-        # glTranslatef(10, ty, tz)
-        # make_tree(1, .8, ORI)
-        # make_tree(1, .3, ORI)
-        # glTranslatef(tx, ty, 4)
-        # make_tree(2, .6, ORI)
-        #
-        # glTranslatef(tx, 4, tz)
-        # make_tree(2, .3, ORI)
-        # glTranslatef(tx, 4, tz)
-        # make_tree(2, .6, ORI)
-        # glTranslatef(10, ty, tz)
-        # make_tree(3, .3, ORI)
-        # glTranslatef(10, ty, tz)
-        # make_tree(2, .6, ORI)
-        #
-        # glTranslatef(tx, 4, tz)
-        # make_tree(2, .3, ORI)
-        # glTranslatef(tx, 4, tz)
-        # make_tree(3, .6, ORI)
-        # glTranslatef(10, ty, tz)
-        # make_tree(1, .3, ORI)
-        # glTranslatef(10, ty, tz)
-        # make_tree(1, .8, ORI)
-        #
         print(str(playerx))
 
-        #   effect = pygame.mixer.Sound('bullet.wav')
-        #    effect.play()
         glPopMatrix()
 
         pygame.display.flip()
-        #glTranslatef(0, 0, 700)
-        # if b==1 else None
-        # glTranslatef(0.0, 0.0, speed)
+
         pygame.time.wait(100)
         mixer.init()
         # if tz == 1:
         #     effect = pygame.mixer.Sound('bullet.wav')
         #     effect.play()
 
+from PIL import Image, ImageDraw
 
+img = Image.new('RGB', (100, 30), color=(73, 109, 137))
+
+d = ImageDraw.Draw(img)
+d.text((10, 10), "Health", fill=(255, 255, 0))
+
+img.save('pil_text.png')
 main()
