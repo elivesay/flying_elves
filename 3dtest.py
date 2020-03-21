@@ -78,11 +78,14 @@ def setup_texture(imageID):
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
     glBindTexture(GL_TEXTURE_2D, imageID)
 
+
 def draw_sword():
+    main_viewport = glViewport(0, 0, 1200, 1000);
+    glMatrixMode(GL_MODELVIEW);
     sword_texture_id = load_texture("chrome.jpeg")
     setup_texture(sword_texture_id)
     glBegin(GL_QUADS)
-    glColor3f(0.13, 0.37, 0.31)
+    #glColor3f(0.13, 0.37, 0.31)
 
     # bottom of sword
     glTexCoord2f(0.0, 0.0);
@@ -156,6 +159,9 @@ def draw_sword():
     glVertex3f(-.2, .5, -.2);  # M
 
     glEnd()
+
+
+
 def draw_cube():
     glBegin(GL_QUADS);
 
@@ -292,6 +298,55 @@ def make_tunnel():
         draw_tunnel()
         glTranslate(0, 0, 1)
 
+
+def draw_hud(x,y, translation_axis=None, translation_value=None, enabled=True):
+    print("in draw hud")
+    # Draw Health bar:
+    glDisable(GL_TEXTURE_2D)
+    #glDisable(GL_DEPTH_TEST)
+    if enabled:
+       status_viewport= glViewport(0, 1000, 1200, 200);
+       glTranslate(3, 0, -2)
+       #glBegin(GL_QUADS);
+       #glColor3f(0.13, 0.37, 0.31)
+       glBegin(GL_QUADS);
+       glColor3d(1, 0, 0);
+       glVertex3f(-1, -1, -10);
+       glVertex3f(1, -1, -10);
+       glVertex3f(1, 1, -10);
+       glVertex3f(-1, 1, -10);
+       glEnd();
+       glMatrixMode(GL_MODELVIEW);
+
+       #glScissor(0, 1200, 1000, 200);
+       #glEnable(GL_SCISSOR_TEST);
+       #glClear(GL_COLOR_BUFFER_BIT);
+
+       #glLoadIdentity();
+
+       #glViewport(600, 0, 400, 400);
+       #glMatrixMode(GL_PROJECTION);  # // Select The Projection Matrix
+       # glLoadIdentity();  # // Reset The Projection Matrix
+       #      # // Set Up Perspective Mode To Fit 1/4 The Screen (Size Of A Viewport)
+       # gluPerspective(45.0, float(1200) / float(400), 0.1, 500.0);
+
+       #main_viewport = glViewport(0, 800, 1200, 920);
+       #glScissor(0, 800, 1200, 920);
+
+
+       #glEnable(GL_SCISSOR_TEST);
+
+       #main_viewport2 = glViewport(0, 0, 1200, 920);
+
+       #glLoadIdentity();
+       #glScissor(0, 0, 1200, 920);
+
+
+       #glEnable(GL_SCISSOR_TEST);
+        #glScissor (x, y,2, 1);
+
+    #else:
+    #   glDisable(GL_SCISSOR_TEST )
 
 def make_ground():
     GLUquadric = gluNewQuadric()
@@ -441,6 +496,7 @@ def main():
     tz = 0
     ry = 0
     rz = 0
+    hud_enabled= True
     #teddy = ObjLoader("creature.OBJ")
 
     glMatrixMode(GL_PROJECTION)
@@ -532,6 +588,8 @@ def main():
                         rz = 0.0
                     elif event.key == pygame.K_DOWN and ry < 0:
                         rz = 0.0
+                    elif event.key == pygame.H_DOWN:
+                        hud_enabled = False if hud_enabled else True;
             # if event.type == pygame.KEYDOWN:
             #     if event.key == pygame.K_UP:
             #         speed += 2
@@ -566,7 +624,7 @@ def main():
 
         glGetFloatv(GL_MODELVIEW_MATRIX, view_mat)
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
         #glRotatef(90, 0, 0, 1)
         # glRotatef(1, 3, 1, 1)
         # glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
@@ -584,6 +642,7 @@ def main():
         #     glPopMatrix()
         #make_tunnel()
         draw_sword()
+        draw_hud(playerx, playery, hud_enabled)
         #glTranslate(2, 22, 14)
 
         glPushMatrix()
