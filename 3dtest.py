@@ -80,7 +80,7 @@ def setup_texture(imageID):
 
 
 def draw_sword():
-    main_viewport = glViewport(0, 0, 1200, 1000);
+    main_viewport = glViewport(0, 0, 1200, 1100);
     glPushMatrix()
     #do_movement()
     glMatrixMode(GL_MODELVIEW);
@@ -284,7 +284,7 @@ def draw_tunnel():
 def do_movement():
 
 
-    glViewport(0, 0, 1200, 1000);
+    glViewport(0, 0, 1200, 1100);
 
     glMatrixMode(GL_MODELVIEW);
     for event in pygame.event.get():
@@ -384,12 +384,40 @@ def make_tunnel():
 def draw_hud(x,y, translation_axis=None, translation_value=None, enabled=True):
     print("in draw hud")
     # Draw Health bar:
-    glDisable(GL_TEXTURE_2D)
+
     #gluLookAt(0, 1000, -1, 0, 1000, -1, 0, 1000, -1)
     #glDisable(GL_DEPTH_TEST)
     if enabled:
+       from PIL import Image, ImageDraw
+
+       img = Image.new('RGB', (50, 10), color=(73, 109, 137))
+
+       d = ImageDraw.Draw(img)
+       d.text((5, 0), "Health:", fill=(255, 255, 0))
+
+       img.save('pil_text.png')
+
        glPushMatrix()
-       status_viewport= glViewport(0, 1000, 1200, 200);
+       status_viewport = glViewport(0, 1100, 1200, 100);
+       health_texture_id = load_texture("pil_text.png")
+       setup_texture(health_texture_id)
+       glTranslate(0, 0, -2)
+       #glRotatef(45.0, 0, 0.0, 1.0)
+       # glBegin(GL_QUADS);
+       # glColor3f(0.13, 0.37, 0.31)
+       glBegin(GL_QUADS);
+       #glColor3d(1, 0, 0);
+       glTexCoord2f(0.0, 0.0);
+       glVertex3f(-1, -1, -10);
+       glTexCoord2f(1.0, 0.0);
+       glVertex3f(1, -1, -10);
+       glTexCoord2f(1, 1);
+       glVertex3f(1, 1, -10);
+       glTexCoord2f(0.0,1.0);
+       glVertex3f(-1, 1, -10);
+       glEnd();
+
+       glDisable(GL_TEXTURE_2D)
        glTranslate(3, 0, -2)
        #glBegin(GL_QUADS);
        #glColor3f(0.13, 0.37, 0.31)
@@ -642,12 +670,5 @@ def main():
         #     effect = pygame.mixer.Sound('bullet.wav')
         #     effect.play()
 
-from PIL import Image, ImageDraw
 
-img = Image.new('RGB', (100, 30), color=(73, 109, 137))
-
-d = ImageDraw.Draw(img)
-d.text((10, 10), "Health", fill=(255, 255, 0))
-
-img.save('pil_text.png')
 main()
