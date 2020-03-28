@@ -5,6 +5,24 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from PIL.Image import open
 from OpenGL.GLUT import *
+tx = 0
+ty = 0
+tz = 0
+
+class GameObject:
+
+    # Initializer / Instance Attributes
+    def __init__(self,
+                 name='default_object',
+                 type='inanimate_object',
+                 location=(0, 0, 0),
+                 rotation=(0, 0, 0)):
+        self.name = name
+        self.type = type
+        self.location = location
+        self.rotation = rotation
+
+
 verticies = (
     (1, -1, -1),
     (1, 1, -1),
@@ -61,7 +79,7 @@ def setup_texture(imageID):
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
     glBindTexture(GL_TEXTURE_2D, imageID)
 
-def draw_sword():
+def draw_sword(sword):
     main_viewport = glViewport(0, 0, 1200, 1100);
 
     # glPushMatrix()
@@ -69,7 +87,11 @@ def draw_sword():
     glMatrixMode(GL_MODELVIEW);
     sword_texture_id = load_texture("chrome.jpeg")
     setup_texture(sword_texture_id)
-    glLoadIdentity()
+    #glLoadIdentity()
+    glTranslate(-3, 0, 0)
+    x, y, z = sword.location
+    print(str(x), str(y), str(z))
+    glTranslate(x, y, z)
     glBegin(GL_QUADS)
     # glColor3f(0.13, 0.37, 0.31)
 
@@ -192,8 +214,9 @@ def draw_hud( enabled=True):
 
        #glPopMatrix()
 
-def move(rot):
 
+def move(rot, sword):
+    print(str(rot))
     glRotate(rot, 1, 0, 0)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -203,7 +226,7 @@ def move(rot):
             glScaled(1.05, 1.05, 1.05)
             print('mousebutton recognized')
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 5:  # wheel rolled down
-            glScaled(0.95, 0.95, 0.95)
+            glScaled(1.95, 1.95,1.95)
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
@@ -211,9 +234,8 @@ def move(rot):
             if event.key == pygame.K_TAB:
                 flying = False if flying else True
             if event.key == pygame.K_a:
-                tx = 1
-                glTranslate(tx, 0, 0)
-                print('a typed')
+                x = sword.location[:1][0] - 1
+                sword.location = sword.location[: 0] + (x,) + sword.location[1 + 0:]
             elif event.key == pygame.K_d:
                 tx = -1
                 glTranslate(tx, 0, 0)
@@ -228,8 +250,9 @@ def move(rot):
                 tz = 1
                 glTranslate(0, 0, tz)
             elif event.key == pygame.K_s:
-                tz = -1
-                glTranslate(0, 0, tz)
+                x = sword.location[:1][0]+1
+                sword.location = sword.location[: 0] + (x,) + sword.location[1 + 0:]
+
             elif event.key == pygame.K_RIGHT:
                 ry = 1.0
                 glRotatef(ry * 2, 0, 1, 0)
@@ -278,6 +301,8 @@ def main():
     health_texture_id = load_texture("pil_text.png")
     setup_texture(health_texture_id)
     rot = 3
+    sword = GameObject('sword')
+
     while True:
 
         for event in pygame.event.get():
@@ -297,7 +322,7 @@ def main():
         #           0,0, 0);
         glPushMatrix()
         glPushMatrix()
-        glTranslate(0,-4,0)
+        #glTranslate(0,-4,0)
         draw_hud()
 
         glPopMatrix()
@@ -317,8 +342,9 @@ def main():
 
 
         glPushMatrix()
-        move(rot)
-        draw_sword()
+        move(rot, sword)
+        #glRotatef(rot, 1, 1, 1)
+        draw_sword(sword )
 
         glPopMatrix()
         rot = rot + 1
