@@ -1,4 +1,5 @@
 import pygame
+import array as ar
 from pygame.locals import *
 
 from OpenGL.GL import *
@@ -16,12 +17,23 @@ class GameObject:
                  name='default_object',
                  type='inanimate_object',
                  location=(0, 0, 0),
-                 rotation=(0, 0, 0)):
+                 rotation=(0, 0, 0, 0)):
         self.name = name
         self.type = type
         self.location = location
         self.rotation = rotation
 
+
+class Sword(GameObject):
+    def __init__(self,
+                 name='default_object',
+                 type='inanimate_object',
+                 location=(0, 0, 0),
+                 rotation=(0, 0, 0, 0)
+                 ):
+        super(Sword, self).__init__(name, type, location, rotation)
+        self.total_rotation = 1
+        self.swinging = False
 
 verticies = (
     (1, -1, -1),
@@ -90,8 +102,30 @@ def draw_sword(sword):
     #glLoadIdentity()
     glTranslate(-3, 0, 0)
     x, y, z = sword.location
+    if not sword.swinging:
+        glRotate(90, 1, 1, 1)
     print(str(x), str(y), str(z))
     glTranslate(x, y, z)
+    if sword.swinging and sword.total_rotation<50:
+        glRotate((sword.total_rotation+( (sword.total_rotation+48)*2)), 1, 0, 1)
+        sword.total_rotation = sword.total_rotation + 1
+        if sword.total_rotation>48:
+            sword.swinging=False
+            sword.total_rotation=1
+    # print("sowrd current steps: " + str(sword.current_step))
+    #
+    # for step in range(0,sword.current_step):
+    #     angle = sword.rotation_steps[step]
+    #     print("angle: ")
+    #     print(str(angle))
+    #     #angle, rx, rz, ry = sword.rotation
+    #     glRotatef(int(angle) * 1.0, 0, 0, 1)
+    #
+    #     if sword.current_step < len(sword.rotation_steps)-1:
+    #         sword.current_step = sword.current_step + 1
+    #     else:
+    #         sword.current_step = 1
+    #         sword.swinging = False
     glBegin(GL_QUADS)
     # glColor3f(0.13, 0.37, 0.31)
 
@@ -217,7 +251,8 @@ def draw_hud( enabled=True):
 
 def move(rot, sword):
     print(str(rot))
-    glRotate(rot, 1, 0, 0)
+    #glRotate(rot, 1, 0, 0)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -263,8 +298,13 @@ def move(rot, sword):
                 rz = 1.0
                 glRotatef(ry * 2, 0, 0, 1)
             elif event.key == pygame.K_DOWN:
-                rz = -1.0
-                glRotatef(ry * 2, 0, 0, 1)
+                #rz = -1.0
+                #glRotatef(ry * 2, 0, 0, 1)
+                sword.swinging = True
+
+                #rz = sword.rotation[:1][0] + 5
+                #sword.rotation = sword.rotation[: 0] + (rz,) + sword.rotation[1 + 0:]
+
             elif event.type == pygame.K_SPACE:
                 tx = 0
                 ty = 0
@@ -287,6 +327,7 @@ def move(rot, sword):
                     rz = 0.0
                 elif event.key == pygame.K_DOWN and ry < 0:
                     rz = 0.0
+
                 elif event.key == pygame.H_DOWN:
                     hud_enabled = False if hud_enabled else True;
 def main():
@@ -301,7 +342,8 @@ def main():
     health_texture_id = load_texture("pil_text.png")
     setup_texture(health_texture_id)
     rot = 3
-    sword = GameObject('sword')
+    sword = Sword('sword')
+    player = GameObject(name='elf boy', type='player')
 
     while True:
 
