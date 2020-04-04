@@ -91,6 +91,75 @@ def setup_texture(imageID):
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
     glBindTexture(GL_TEXTURE_2D, imageID)
 
+
+def draw_tunnel():
+
+
+    #glScalef(6, 6, 6)
+    texture_id = load_texture("brick_gray.jpeg")
+    setup_texture(texture_id)
+    #glColor4f(.23, .78, .32, 0.0);
+    glTranslate(-3.5,-.5,0)
+
+    for tunnel_sections in range(0,25):
+
+        glPushMatrix();
+        glBegin(GL_QUADS);
+
+        # Floor
+        glTexCoord2f(0.0, 0.0);
+        glVertex3f(0,0,0);
+        glTexCoord2f(1.0, 0.0);
+        glVertex3f(1, 0, 0);
+        glTexCoord2f(1.0, 1.0);
+        glVertex3f(1, 0, -1);
+        glTexCoord2f(0, 1.0);
+        glVertex3f(0, 0, -1);
+
+
+        #
+        # # Right Side
+        glTexCoord2f(0.0, 0.0);
+        glVertex3f(1,0,0);
+        glTexCoord2f(1.0, 0.0);
+        glVertex3f(1, 0, -1);
+
+        glTexCoord2f(1.0, 1.0);
+        glVertex3f(1, 1, -1);
+        glTexCoord2f(0.0, 1.0);
+        glVertex3f(1, 1, 0);
+
+
+        # # Left side
+        #
+        glTexCoord2f(0.0, 0.0);
+        glVertex3f(0,0,0);
+        glTexCoord2f(1.0, 0.0);
+        glVertex3f(0, 1, 0);
+        glTexCoord2f(1.0, 1.0);
+        glVertex3f(0, 1, -1);
+        glTexCoord2f(0, 1.0);
+        glVertex3f(0, 0, -1);
+        #
+        # # Ceiling side
+        #
+        glTexCoord2f(0.0, 0.0);
+        glVertex3f(0,1,0);
+        glTexCoord2f(1.0, 0.0);
+        glVertex3f(0, 1, -1);
+        glTexCoord2f(1.0, 1.0);
+        glVertex3f(1, 1, -1);
+        glTexCoord2f(0, 1.0);
+        glVertex3f(1, 1, 0);
+
+        #
+
+        glEnd();
+        glPopMatrix();
+        glTranslate(0, 0, .05*tunnel_sections)
+        #ssglRotate(0, 0, 0, 0)
+
+
 def draw_sword(sword):
     main_viewport = glViewport(0, 0, 1200, 1100);
 
@@ -112,20 +181,7 @@ def draw_sword(sword):
         if sword.total_rotation>48:
             sword.swinging=False
             sword.total_rotation=1
-    # print("sowrd current steps: " + str(sword.current_step))
-    #
-    # for step in range(0,sword.current_step):
-    #     angle = sword.rotation_steps[step]
-    #     print("angle: ")
-    #     print(str(angle))
-    #     #angle, rx, rz, ry = sword.rotation
-    #     glRotatef(int(angle) * 1.0, 0, 0, 1)
-    #
-    #     if sword.current_step < len(sword.rotation_steps)-1:
-    #         sword.current_step = sword.current_step + 1
-    #     else:
-    #         sword.current_step = 1
-    #         sword.swinging = False
+
     glBegin(GL_QUADS)
     # glColor3f(0.13, 0.37, 0.31)
 
@@ -375,10 +431,11 @@ def main():
         #gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
 
         #glTranslate(0,0, 0)
-        glRotatef(rot, 1, 1, 1)
+        #glRotatef(rot, 1, 1, 1)
 
-        Cube()
-
+        #Cube()
+        #glTranslate(-4,0,0)
+        draw_tunnel()
 
         glPopMatrix()
 
