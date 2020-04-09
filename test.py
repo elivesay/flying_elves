@@ -1,7 +1,7 @@
 import pygame
 import array as ar
 from pygame.locals import *
-
+from pygame import mixer
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from PIL.Image import open
@@ -22,7 +22,7 @@ class GameObject:
         self.type = type
         self.location = location
         self.rotation = rotation
-
+        self.health = 10
 
 class Sword(GameObject):
     def __init__(self,
@@ -92,14 +92,18 @@ def setup_texture(imageID):
     glBindTexture(GL_TEXTURE_2D, imageID)
 
 
-def draw_tunnel():
-
-
-    #glScalef(6, 6, 6)
+def draw_tunnel(sword):
+    tunnel_left_boundary = -2
+    glScalef(2, 2, 2)
     texture_id = load_texture("brick_gray.jpeg")
     setup_texture(texture_id)
     #glColor4f(.23, .78, .32, 0.0);
-    glTranslate(-3.5,-.5,0)
+
+    glTranslate(-2,-.5,0)
+
+    x, y, z = sword.location
+    if x > tunnel_left_boundary:
+        glTranslate(-x, -y, -z)
 
     for tunnel_sections in range(0,25):
 
@@ -173,8 +177,8 @@ def draw_sword(sword):
     x, y, z = sword.location
     if not sword.swinging:
         glRotate(90, 1, 1, 1)
-    print(str(x), str(y), str(z))
-    glTranslate(x, y, z)
+    #print(str(x), str(y), str(z))
+    #glTranslate(z, y, x)
     if sword.swinging and sword.total_rotation<50:
         glRotate((sword.total_rotation+( (sword.total_rotation+48)*2)), 1, 0, 1)
         sword.total_rotation = sword.total_rotation + 1
@@ -258,7 +262,7 @@ def draw_sword(sword):
     glEnd()
 
 
-def draw_hud( enabled=True):
+def draw_hud(player,  enabled=True ):
     print("in draw hud")
     # Draw Health bar:
 
@@ -295,21 +299,23 @@ def draw_hud( enabled=True):
 
        glBegin(GL_QUADS);
        glColor3d(1, 0, 0);
-       glVertex3f(-1, -1, -10);
-       glVertex3f(1, -1, -10);
-       glVertex3f(1, 1, -10);
-       glVertex3f(-1, 1, -10);
+       print("player health: " + str(player.health))
+       glVertex3f(-.1*player.health, -1, -10);
+       glVertex3f(.1*player.health, -1, -10);
+       glVertex3f(.1*player.health, 1, -10);
+       glVertex3f(-.1*player.health, 1, -10);
        glEnd();
        #glMatrixMode(GL_MODELVIEW);
 
        #glPopMatrix()
 
 
-def move(rot, sword):
+def move(rot, sword, player):
     print(str(rot))
     #glRotate(rot, 1, 0, 0)
-
+    tunnel_left_boundary=-1.5
     for event in pygame.event.get():
+        x = sword.location[:1][0] - .5
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
@@ -325,8 +331,14 @@ def move(rot, sword):
             if event.key == pygame.K_TAB:
                 flying = False if flying else True
             if event.key == pygame.K_a:
-                x = sword.location[:1][0] - 1
-                sword.location = sword.location[: 0] + (x,) + sword.location[1 + 0:]
+                #x = sword.location[:1][0] -.5
+                if x-.5 > tunnel_left_boundary:
+                    sword.location = sword.location[: 0] + (x,) + sword.location[1 + 0:]
+                elif x -.5 == tunnel_left_boundary:
+                    mixer.init()
+                    effect = pygame.mixer.Sound('bullet.wav')
+                    effect.play()
+                    player.health = player.health - 1 if player.health>0 else player.health
             elif event.key == pygame.K_d:
                 tx = -1
                 glTranslate(tx, 0, 0)
@@ -341,7 +353,7 @@ def move(rot, sword):
                 tz = 1
                 glTranslate(0, 0, tz)
             elif event.key == pygame.K_s:
-                x = sword.location[:1][0]+1
+                x = sword.location[:1][0]+.5
                 sword.location = sword.location[: 0] + (x,) + sword.location[1 + 0:]
 
             elif event.key == pygame.K_RIGHT:
@@ -393,14 +405,14 @@ def main():
    
     gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
     glTranslatef(0.0,0.0, -5)
-    draw_hud()
+
     status_viewport = glViewport(0, 1100, 1200, 100);
     health_texture_id = load_texture("pil_text.png")
     setup_texture(health_texture_id)
     rot = 3
     sword = Sword('sword')
     player = GameObject(name='elf boy', type='player')
-
+    draw_hud(player)
     while True:
 
         for event in pygame.event.get():
@@ -421,7 +433,7 @@ def main():
         glPushMatrix()
         glPushMatrix()
         #glTranslate(0,-4,0)
-        draw_hud()
+        draw_hud(player)
 
         glPopMatrix()
 
@@ -435,13 +447,13 @@ def main():
 
         #Cube()
         #glTranslate(-4,0,0)
-        draw_tunnel()
+        draw_tunnel(sword)
 
         glPopMatrix()
 
 
         glPushMatrix()
-        move(rot, sword)
+        move(rot, sword, player)
         #glRotatef(rot, 1, 1, 1)
         draw_sword(sword )
 
