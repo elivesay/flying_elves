@@ -61,6 +61,10 @@ edges = (
     (5,7)
     )
 
+from particle import Particle
+from random import uniform
+from OpenGL.GL import *
+
 
 def Cube():
     glBegin(GL_LINES)
@@ -105,7 +109,7 @@ def draw_tunnel(sword):
     if x > tunnel_left_boundary:
         glTranslate(-x, -y, -z)
 
-    for tunnel_sections in range(0,25):
+    for tunnel_sections in range(0,29):
 
         glPushMatrix();
         glBegin(GL_QUADS);
@@ -161,8 +165,59 @@ def draw_tunnel(sword):
         glEnd();
         glPopMatrix();
         glTranslate(0, 0, .05*tunnel_sections)
+
         #ssglRotate(0, 0, 0, 0)
 
+def make_cylinder(height, base):
+    GLUquadric = gluNewQuadric()
+
+    glColor3f(0.36, 0.25, 0.20)
+    glPushMatrix()
+    glRotatef(-90.0, 0.00, 1.0, 1.0)
+    gluCylinder(GLUquadric, base, base - (0.2 * base), height, 20, 20);
+    glPopMatrix()
+    #glutSwapBuffers()
+
+def make_tree(height, base):
+    angle = None
+    glTranslate(-2, .5, 5)
+    make_cylinder(height, base)
+    glTranslatef(0.0, height-.5, 0.0)
+    height -= height * 0.2
+    base -= base * 0.3
+    #
+    # # ramas = random.randint(0, 32767) % 3 + 3
+    # # ramas = rands.pop().pop() % 3 + 3
+    # ramas = one_rand[ORI] % 3 + 3
+    # ORI = ORI + 1
+    #
+    # for a in range(0, ramas):
+    #     # print str(len(rands))
+    #
+    #     # angle = rands.pop().pop() % 50 + 20
+    #     angle = one_rand[ORI] % 50 + 20
+    #     ORI = ORI + 1
+    #     # random.randint(0,32767) % 50 + 20
+    #     if (angle > 48):
+    #         # angle = -(rands.pop().pop() % 50 + 20)
+    #         angle = -(one_rand[ORI] % 50 + 20)
+    #         ORI = ORI + 1
+    #     if (height > 1):
+    #         glPushMatrix();
+    #         randy = one_rand[ORI] % 4
+    #         ORI = ORI + 1
+    #         # rands.pop().pop() % 4
+    #         if (randy % 2 == 0):
+    #             glRotatef(angle, 1, randy, 1)
+    #
+    #         else:
+    #             glRotatef(angle, 1, (-randy), 1)
+    #
+    #         make_tree(height, base, ORI)
+    #         glPopMatrix();
+    #
+    # glColor3f(0.0, 1.0 / (one_rand[ORI] % 3 + 1), 0.0)
+    # glutSolidSphere(0.2, 10, 10)
 
 def draw_sword(sword):
     main_viewport = glViewport(0, 0, 1200, 1100);
@@ -312,10 +367,13 @@ def draw_hud(player,  enabled=True ):
 
 def move(rot, sword, player):
     print(str(rot))
+    print("sword location: " + str(sword.location[:1][0] ))
     #glRotate(rot, 1, 0, 0)
-    tunnel_left_boundary=-1.5
+    tunnel_left_boundary=-.75
+    tunnel_right_boundary = .75
+    movement_size = .25
     for event in pygame.event.get():
-        x = sword.location[:1][0] - .5
+
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
@@ -331,10 +389,10 @@ def move(rot, sword, player):
             if event.key == pygame.K_TAB:
                 flying = False if flying else True
             if event.key == pygame.K_a:
-                #x = sword.location[:1][0] -.5
-                if x-.5 > tunnel_left_boundary:
+                x = sword.location[:1][0] - movement_size
+                if x-movement_size > tunnel_left_boundary:
                     sword.location = sword.location[: 0] + (x,) + sword.location[1 + 0:]
-                elif x -.5 == tunnel_left_boundary:
+                elif x -movement_size == tunnel_left_boundary:
                     mixer.init()
                     effect = pygame.mixer.Sound('bullet.wav')
                     effect.play()
@@ -353,8 +411,14 @@ def move(rot, sword, player):
                 tz = 1
                 glTranslate(0, 0, tz)
             elif event.key == pygame.K_s:
-                x = sword.location[:1][0]+.5
-                sword.location = sword.location[: 0] + (x,) + sword.location[1 + 0:]
+                x = sword.location[:1][0] + movement_size
+                if x + movement_size < tunnel_right_boundary:
+                    sword.location = sword.location[: 0] + (x,) + sword.location[1 + 0:]
+                elif x + movement_size == tunnel_right_boundary:
+                    mixer.init()
+                    effect = pygame.mixer.Sound('bullet.wav')
+                    effect.play()
+                    player.health = player.health - 1 if player.health > 0 else player.health
 
             elif event.key == pygame.K_RIGHT:
                 ry = 1.0
@@ -413,6 +477,7 @@ def main():
     sword = Sword('sword')
     player = GameObject(name='elf boy', type='player')
     draw_hud(player)
+
     while True:
 
         for event in pygame.event.get():
@@ -430,8 +495,11 @@ def main():
         # gluLookAt(0, 0, 0,
         #          0, 0, 0,
         #           0,0, 0);
+
         glPushMatrix()
         glPushMatrix()
+        glPushMatrix()
+        make_tree(1, 1)
         #glTranslate(0,-4,0)
         draw_hud(player)
 
@@ -447,6 +515,7 @@ def main():
 
         #Cube()
         #glTranslate(-4,0,0)
+        glPopMatrix()
         draw_tunnel(sword)
 
         glPopMatrix()
