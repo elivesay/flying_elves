@@ -1,5 +1,6 @@
 import pygame
 import array as ar
+from objfileloader import *
 from pygame.locals import *
 from pygame import mixer
 from OpenGL.GL import *
@@ -24,6 +25,7 @@ class GameObject:
         self.rotation = rotation
         self.health = 10
 
+
 class Sword(GameObject):
     def __init__(self,
                  name='default_object',
@@ -34,6 +36,18 @@ class Sword(GameObject):
         super(Sword, self).__init__(name, type, location, rotation)
         self.total_rotation = 1
         self.swinging = False
+
+
+class Player(GameObject):
+    def __init__(self,
+                 name='elf_boy',
+                 type='player',
+                 location=(0, 0, 0),
+                 rotation=(0, 0, 0, 0)
+                 ):
+        super(Player, self).__init__(name, type, location, rotation)
+        self.flying = False
+        self.movement_direction = -1
 
 verticies = (
     (1, -1, -1),
@@ -96,8 +110,10 @@ def setup_texture(imageID):
     glBindTexture(GL_TEXTURE_2D, imageID)
 
 
-def draw_tunnel(sword):
+def draw_tunnel(sword, rotate = False):
+
     tunnel_left_boundary = -2
+
     glScalef(2, 2, 2)
     texture_id = load_texture("brick_gray.jpeg")
     setup_texture(texture_id)
@@ -109,7 +125,7 @@ def draw_tunnel(sword):
     if x > tunnel_left_boundary:
         glTranslate(-x, -y, -z)
 
-    for tunnel_sections in range(0,29):
+    for tunnel_sections in range(0,45):
 
         glPushMatrix();
         glBegin(GL_QUADS);
@@ -164,9 +180,12 @@ def draw_tunnel(sword):
 
         glEnd();
         glPopMatrix();
-        glTranslate(0, 0, .05*tunnel_sections)
+
+        glTranslate(0, 0, .01*tunnel_sections)
+        print(str(rotate))
 
         #ssglRotate(0, 0, 0, 0)
+
 
 def make_cylinder(height, base):
     GLUquadric = gluNewQuadric()
@@ -177,6 +196,7 @@ def make_cylinder(height, base):
     gluCylinder(GLUquadric, base, base - (0.2 * base), height, 20, 20);
     glPopMatrix()
     #glutSwapBuffers()
+
 
 def make_tree(height, base):
     angle = None
@@ -235,7 +255,7 @@ def draw_sword(sword):
     #print(str(x), str(y), str(z))
     #glTranslate(z, y, x)
     if sword.swinging and sword.total_rotation<50:
-        glRotate((sword.total_rotation+( (sword.total_rotation+48)*2)), 1, 0, 1)
+        glRotate((sword.total_rotation+( (sword.total_rotation+48)*3)), 1, 0, 1)
         sword.total_rotation = sword.total_rotation + 1
         if sword.total_rotation>48:
             sword.swinging=False
@@ -316,7 +336,10 @@ def draw_sword(sword):
     glVertex3f(-.2, .5, -.2);  # M
     glEnd()
 
-
+def open_obj():
+    print("trying to open obj")
+    obj = OBJFile('obj_skinny_creature.OBJ')
+    obj.draw()
 def draw_hud(player,  enabled=True ):
     print("in draw hud")
     # Draw Health bar:
@@ -367,11 +390,16 @@ def draw_hud(player,  enabled=True ):
 
 def move(rot, sword, player):
     print(str(rot))
-    print("sword location: " + str(sword.location[:1][0] ))
+    print("sword location: " + str(sword.location[2:3][0] ))
     #glRotate(rot, 1, 0, 0)
     tunnel_left_boundary=-.75
     tunnel_right_boundary = .75
-    movement_size = .25
+    movement_size = .1
+    print("flying: " + str(player.flying))
+    if player.flying:
+        z = sword.location[2] + (movement_size * player.movement_direction)
+        sword.location = (sword.location[0], sword.location[1], z)
+
     for event in pygame.event.get():
 
         if event.type == pygame.QUIT:
@@ -387,7 +415,8 @@ def move(rot, sword, player):
                 pygame.quit()
                 quit()
             if event.key == pygame.K_TAB:
-                flying = False if flying else True
+                player.flying = False if player.flying else True
+                print(" in move hit tab: " + str(player.flying))
             if event.key == pygame.K_a:
                 x = sword.location[:1][0] - movement_size
                 if x-movement_size > tunnel_left_boundary:
@@ -398,19 +427,6 @@ def move(rot, sword, player):
                     effect.play()
                     player.health = player.health - 1 if player.health>0 else player.health
             elif event.key == pygame.K_d:
-                tx = -1
-                glTranslate(tx, 0, 0)
-            elif event.key == pygame.K_e:
-                ty = 1
-                glTranslate(0, ty, 0)
-            elif event.key == pygame.K_q:
-                ty = -1
-                glTranslate(0, ty, 0)
-
-            elif event.key == pygame.K_w:
-                tz = 1
-                glTranslate(0, 0, tz)
-            elif event.key == pygame.K_s:
                 x = sword.location[:1][0] + movement_size
                 if x + movement_size < tunnel_right_boundary:
                     sword.location = sword.location[: 0] + (x,) + sword.location[1 + 0:]
@@ -419,7 +435,20 @@ def move(rot, sword, player):
                     effect = pygame.mixer.Sound('bullet.wav')
                     effect.play()
                     player.health = player.health - 1 if player.health > 0 else player.health
-
+            elif event.key == pygame.K_e:
+                ty = 1
+                glTranslate(0, ty, 0)
+            elif event.key == pygame.K_q:
+                ty = -1
+                glTranslate(0, ty, 0)
+            elif event.key == pygame.K_w:
+                player.movement_direction = -1
+                z = sword.location[2] - movement_size
+                sword.location = (sword.location[0] , sword.location[1], z)
+            elif event.key == pygame.K_s:
+                player.movement_direction = 1
+                z = sword.location[2] + movement_size
+                sword.location = (sword.location[0], sword.location[1], z)
             elif event.key == pygame.K_RIGHT:
                 ry = 1.0
                 glRotatef(ry * 2, 0, 1, 0)
@@ -427,15 +456,8 @@ def move(rot, sword, player):
                 ry = -1.0
                 glRotatef(ry * 2, 0, 1, 0)
             elif event.key == pygame.K_UP:
-                rz = 1.0
-                glRotatef(ry * 2, 0, 0, 1)
-            elif event.key == pygame.K_DOWN:
-                #rz = -1.0
-                #glRotatef(ry * 2, 0, 0, 1)
                 sword.swinging = True
-
-                #rz = sword.rotation[:1][0] + 5
-                #sword.rotation = sword.rotation[: 0] + (rz,) + sword.rotation[1 + 0:]
+            elif event.key == pygame.K_DOWN:
 
             elif event.type == pygame.K_SPACE:
                 tx = 0
@@ -475,9 +497,9 @@ def main():
     setup_texture(health_texture_id)
     rot = 3
     sword = Sword('sword')
-    player = GameObject(name='elf boy', type='player')
+    player = Player()
     draw_hud(player)
-
+    movement_direction = 1
     while True:
 
         for event in pygame.event.get():
@@ -499,7 +521,7 @@ def main():
         glPushMatrix()
         glPushMatrix()
         glPushMatrix()
-        make_tree(1, 1)
+        #open_obj()
         #glTranslate(0,-4,0)
         draw_hud(player)
 
@@ -522,6 +544,7 @@ def main():
 
 
         glPushMatrix()
+        print("in main loop - flying: " + str(player.flying))
         move(rot, sword, player)
         #glRotatef(rot, 1, 1, 1)
         draw_sword(sword )
