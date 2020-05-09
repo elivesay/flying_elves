@@ -457,7 +457,6 @@ def move(rot, sword, player):
                 glRotatef(ry * 2, 0, 1, 0)
             elif event.key == pygame.K_UP:
                 sword.swinging = True
-            elif event.key == pygame.K_DOWN:
 
             elif event.type == pygame.K_SPACE:
                 tx = 0
@@ -487,7 +486,7 @@ def move(rot, sword, player):
 def main():
     pygame.init()
     display = (1200,1200)
-    pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
+    game_display = pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
    
     gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
     glTranslatef(0.0,0.0, -5)
