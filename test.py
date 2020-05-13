@@ -48,7 +48,7 @@ class Player(GameObject):
         super(Player, self).__init__(name, type, location, rotation)
         self.flying = False
         self.movement_direction = -1
-
+        self.alive=True
 verticies = (
     (1, -1, -1),
     (1, 1, -1),
@@ -125,7 +125,8 @@ def draw_tunnel(sword, rotate = False):
     if x > tunnel_left_boundary:
         glTranslate(-x, -y, -z)
 
-    for tunnel_sections in range(0,45):
+    for tunnel_sections in range(0,370):
+
 
         glPushMatrix();
         glBegin(GL_QUADS);
@@ -340,6 +341,7 @@ def open_obj():
     print("trying to open obj")
     obj = OBJFile('obj_skinny_creature.OBJ')
     obj.draw()
+
 def draw_hud(player,  enabled=True ):
     print("in draw hud")
     # Draw Health bar:
@@ -388,12 +390,61 @@ def draw_hud(player,  enabled=True ):
        #glPopMatrix()
 
 
+def game_over(player,  enabled=True ):
+    print("in draw hud")
+    # Draw Health bar:
+
+    if enabled:
+       from PIL import Image, ImageDraw
+
+       img = Image.new('RGB', (50, 10), color=(73, 109, 137))
+
+       d = ImageDraw.Draw(img)
+       d.text((5, 0), "game_over:", fill=(255, 255, 0))
+
+       img.save('pil_text.png')
+
+
+       status_viewport = glViewport(0, 1100, 1200, 100);
+       health_texture_id = load_texture("pil_text.png")
+       setup_texture(health_texture_id)
+
+       #glPushMatrix()
+       glBegin(GL_QUADS);
+
+       glTexCoord2f(0.0, 0.0);
+       glVertex3f(-1, -1, -10);
+       glTexCoord2f(1.0, 0.0);
+       glVertex3f(1, -1, -10);
+       glTexCoord2f(1, 1);
+       glVertex3f(1, 1, -10);
+       glTexCoord2f(0.0,1.0);
+       glVertex3f(-1, 1, -10);
+       glEnd();
+
+       glDisable(GL_TEXTURE_2D)
+       glTranslate(3, 0, -2)
+
+       glBegin(GL_QUADS);
+       glColor3d(1, 0, 0);
+       print("player health: " + str(player.health))
+       glVertex3f(-.1*player.health, -1, -10);
+       glVertex3f(.1*player.health, -1, -10);
+       glVertex3f(.1*player.health, 1, -10);
+       glVertex3f(-.1*player.health, 1, -10);
+       glEnd();
+       #glMatrixMode(GL_MODELVIEW);
+
+       #glPopMatrix()
+
+
 def move(rot, sword, player):
     print(str(rot))
-    print("sword location: " + str(sword.location[2:3][0] ))
+    print("sword location: " +str(sword.location))
+          #+ str(sword.location[2:3][0] ))
     #glRotate(rot, 1, 0, 0)
-    tunnel_left_boundary=-.75
-    tunnel_right_boundary = .75
+    tunnel_left_boundary=-.5
+    tunnel_right_boundary = .5
     movement_size = .1
     print("flying: " + str(player.flying))
     if player.flying:
@@ -426,6 +477,8 @@ def move(rot, sword, player):
                     effect = pygame.mixer.Sound('bullet.wav')
                     effect.play()
                     player.health = player.health - 1 if player.health>0 else player.health
+                    if player.health==0:
+                        player.alive=False
             elif event.key == pygame.K_d:
                 x = sword.location[:1][0] + movement_size
                 if x + movement_size < tunnel_right_boundary:
@@ -457,7 +510,7 @@ def move(rot, sword, player):
                 glRotatef(ry * 2, 0, 1, 0)
             elif event.key == pygame.K_UP:
                 sword.swinging = True
-
+      
             elif event.type == pygame.K_SPACE:
                 tx = 0
                 ty = 0
@@ -486,7 +539,7 @@ def move(rot, sword, player):
 def main():
     pygame.init()
     display = (1200,1200)
-    game_display = pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
+    pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
    
     gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
     glTranslatef(0.0,0.0, -5)
@@ -523,7 +576,8 @@ def main():
         #open_obj()
         #glTranslate(0,-4,0)
         draw_hud(player)
-
+        if player.alive==False:
+            game_over(player)
         glPopMatrix()
 
         glViewport(0, 0, 1200, 1100);
@@ -551,6 +605,8 @@ def main():
         glPopMatrix()
         rot = rot + 1
         glFlush()
+        #fireball_image = pygame.image.load('fireball.jpeg')
+        #display.blit(fireball_image, (400, 400))
         pygame.display.flip()
         pygame.time.wait(10)
 
