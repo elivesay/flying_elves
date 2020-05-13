@@ -182,7 +182,7 @@ def draw_tunnel(sword, rotate = False):
         glEnd();
         glPopMatrix();
 
-        glTranslate(0, 0, .01*tunnel_sections)
+        glTranslate(0, 0, (.05*tunnel_sections) %1  )
         print(str(rotate))
 
         #ssglRotate(0, 0, 0, 0)
@@ -256,7 +256,7 @@ def draw_sword(sword):
     #print(str(x), str(y), str(z))
     #glTranslate(z, y, x)
     if sword.swinging and sword.total_rotation<50:
-        glRotate((sword.total_rotation+( (sword.total_rotation+48)*3)), 1, 0, 1)
+        glRotate((sword.total_rotation+( (sword.total_rotation+48)*3.5)), 1, 0, 1)
         sword.total_rotation = sword.total_rotation + 1
         if sword.total_rotation>48:
             sword.swinging=False
